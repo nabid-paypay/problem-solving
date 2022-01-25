@@ -1,70 +1,153 @@
 import java.util.*;
 
 public class Contest {
-    Map<Integer, List<Integer>> map = new HashMap<>();
-    public int maximumDetonation(int[][] bombs) {
 
-        for(int i=0; i<bombs.length; i++){
-            int[] b1 = bombs[i];
-            for(int j=i+1; j<bombs.length; j++){
-                int[] b2 = bombs[j];
-                if(isInside(b1[0], b1[1], b1[2], b2[0], b2[1])){
-                    map.putIfAbsent(i, new ArrayList<>());
-                    map.putIfAbsent(j, new ArrayList<>());
+//[[1,2,0,1],[1,3,3,1],[0,2,5,1]]
+//        [2,3]
+//        [2,3]
+//        2
 
-                    map.get(i).add(j);
-                }
-            }
+    public int minimumCost(int[] cost) {
+        //[6,5,7,9,2,2]
+        //2 2 5 6 7 9
+        Arrays.sort(cost);
+        int res = 0;
+        int i = cost.length-1;
+        for( ; i>0; i-=3){
+            res += (cost[i] + cost[i-1]);
         }
 
-        int max = 0;
-        for(int i=0; i<bombs.length; i++){
-            int k = dfs(i, new boolean[bombs.length]);
-            max = Math.max(max, k);
-        }
-
-        return max;
+        return res + (i == 0 ? cost[0] : 0);
     }
 
-    private int dfs(int node, boolean[] vs){
-        if(vs[node]){
-            return 0;
+    public List<List<Integer>> highestRankedKItems(int[][] grid, int[] pricing, int[] start, int k) {
+        List<List<Integer>> res = new ArrayList<>();
+        int m = grid.length;
+        int n = grid[0].length;
+
+        int lower = pricing[0];
+        int upper = pricing[1];
+
+        Queue<Node> q = new ArrayDeque<>();
+        PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingInt((Node a) -> a.dist)
+                .thenComparingInt(a -> a.price)
+                .thenComparingInt(a -> a.r)
+                .thenComparingInt(a -> a.c));
+
+        Node temp = new Node(start[0], start[1], 0, grid[start[0]][start[1]]);
+        q.add(temp);
+        if(grid[start[0]][start[1]] >=lower && grid[start[0]][start[1]] <= upper){
+            pq.add(temp);
         }
 
-        vs[node] = true;
-        int res = 1;
-        for(int nei : map.getOrDefault(node, new ArrayList<>())){
-            //res++;
-            res += dfs(nei, vs);
+        boolean[][] vs = new boolean[m][n];
+        boolean[][] pqAdded = new boolean[m][n];
+        int[][] dirs = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+
+        int level = 1;
+        while (!q.isEmpty()){
+            int sz = q.size();
+            for (int i=0; i<sz; i++){
+                Node curr = q.poll();
+                assert curr != null;
+                if(vs[curr.r][curr.c]){
+                    continue;
+                }
+
+                vs[curr.r][curr.c] = true;
+
+                for(int[] dir : dirs){
+                    int ni = curr.r + dir[0];
+                    int nj = curr.c + dir[1];
+
+                    if(ni >= 0 && ni < m && nj >=0 && nj < n && !vs[ni][nj] && grid[ni][nj]!=0){
+                        Node t = new Node(ni, nj, level, grid[ni][nj]);
+                        q.add(t);
+                        if(grid[ni][nj] >= lower && grid[ni][nj] <= upper && !pqAdded[ni][nj]){
+                            pq.add(t);
+                            pqAdded[ni][nj] = true;
+                        }
+
+                    }
+                }
+            }
+
+            level++;
+
         }
 
+        for(int i = 0; i<k && !pq.isEmpty(); i++){
+            Node curr = pq.poll();
+            res.add(List.of(curr.r, curr.c));
+        }
         return res;
     }
 
+    class Node{
+        int r;
+        int c;
+        int dist;
+        int price;
 
-    static boolean isInside(int circle_x, int circle_y,
-                            int rad, int x, int y)
-    {
-        // Compare radius of circle with
-        // distance of its center from
-        // given point
-        if ((x - circle_x) * (x - circle_x) +
-                (y - circle_y) * (y - circle_y) <= rad * rad)
-            return true;
-        else
-            return false;
+        public Node(int r, int c, int dist, int price){
+            this.r = r;
+            this.c = c;
+            this.dist = dist;
+            this.price = price;
+        }
     }
+
+    public int numberOfArrays(int[] differences, int lower, int upper) {
+        int min = Integer.MAX_VALUE;
+        for(int d : differences){
+            int a = count(d, lower, upper);
+            if(a == 0){
+                return 0;
+            }
+            min = Math.min(min, a);
+        }
+
+        return min;
+    }
+
+    private int count(int num, int lower, int upper){
+        if(num > (upper - lower)){
+            return 0;
+        }
+        int count = 0;
+        int mid = (lower + upper)/2;
+        while (mid - lower <= num){
+            if(mid - lower == num){
+                break;
+            }
+            lower++;
+        }
+
+        while (mid < upper){
+            if(mid - upper == num){
+                count++;
+                lower++;
+                mid++;
+            }
+            else if( (mid - lower) > num){
+                lower++;
+                upper--;
+            }
+
+        }
+
+        return count;
+    }
+
+
 
     public static void main(String[] args) {
         Contest contest = new Contest();
-        contest.maximumDetonation(new int[][]{{2,1,3},{6,1,4}});
-        List<String> res = new ArrayList<>();
-        PriorityQueue<String> pq = new PriorityQueue<>();
-        res.addAll(pq);
-        TreeMap<Integer, List<String>> treeMap = new TreeMap<>(Comparator.reverseOrder());
-
-        Iterator<Map.Entry<Integer, List<String>>> iterator = treeMap.entrySet().iterator();
-         TreeSet<Integer> locations = new TreeSet<>();
+        contest.highestRankedKItems(new int[][]{{1,2,0,1},{1,3,0,1},{0,2,5,1}}, new int[]{2, 5}, new int[]{0, 0}, 3);
         //iterator.next()
     }
+
+
+
+
 }
