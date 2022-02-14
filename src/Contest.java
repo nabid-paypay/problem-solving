@@ -202,7 +202,7 @@ public class Contest {
         }
     }
 
-//bad commit
+//good commit/ the state you want to set in github
 
 
 }
