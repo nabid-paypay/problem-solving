@@ -204,5 +204,6 @@ public class Contest {
 
 //good commit/ the state you want to set in github
 
+    //something good again
 
 }
