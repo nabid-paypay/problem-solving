@@ -1,4 +1,7 @@
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.LockSupport;
+import java.util.stream.Collectors;
 
 public class Contest {
 
@@ -83,7 +86,7 @@ public class Contest {
         return res;
     }
 
-    class Node{
+    static class Node{
         int r;
         int c;
         int dist;
@@ -135,16 +138,68 @@ public class Contest {
             }
 
         }
-
+        List<String> list = new ArrayList<>();
+        list.forEach(this::update);
         return count;
+    }
+
+    private void update(String lead){
+
+    }
+    public int minDeletions(String s) {
+        Map<Character, Integer> map = new HashMap<>();
+        for(char ch : s.toCharArray()){
+            map.put(ch, map.getOrDefault(ch, 0) + 1);
+        }
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        for (int val : map.values()){
+            min = Math.min(min, val);
+            max = Math.max(max, val);
+        }
+
+        int[] freq = new int[max + 1];
+        for (int val : map.values()){
+            freq[val]++;
+        }
+
+        //2 -> 4
+        int res = 0;
+        for (int i=0; i<=max; i++){ //i=2
+            if (freq[i] > 1){
+                int f = freq[i]; //4
+                res += ((freq[i] - 2) * i);
+                res += reduce(freq, freq[i]-1);
+            }
+        }
+
+        return res;
+    }
+
+    private int reduce(int[] freq, int idx){
+        int f = idx + 1;
+        for(int i = idx; i>=0; i--){
+            if(freq[i] == 0){
+                freq[i]++;
+                return f - i;
+            }
+        }
+
+        return f;
     }
 
 
 
     public static void main(String[] args) {
         Contest contest = new Contest();
-        contest.highestRankedKItems(new int[][]{{1,2,0,1},{1,3,0,1},{0,2,5,1}}, new int[]{2, 5}, new int[]{0, 0}, 3);
-        //iterator.next()
+        var counter = new AtomicInteger();
+        while (true) {
+            new Thread(() -> {
+                int count = counter.incrementAndGet();
+                System.out.println("count = " + count);
+                LockSupport.park();
+            }).start();
+        }
     }
 
 
