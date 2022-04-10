@@ -298,10 +298,560 @@ class Solution {
 
         return max - min;
     }
+    public int sumOfUnique(int[] nums) {
+        Set<Integer> set = new HashSet<>();
+        int sum = 0;
+        for(int n : nums){
+            if(set.contains(n)){
+                set.remove(n);
+                sum -= n;
+            }
+            else{
+                set.add(n);
+                sum += n;
+            }
+        }
 
+        return sum;
+    }
+
+    public int halveArray(int[] nums) {
+        int sum = 0;
+        PriorityQueue<Double> pq = new PriorityQueue<>(Comparator.comparingDouble(a -> a));
+        for(int n : nums){
+            sum += n;
+            pq.add(n*1.0);
+        }
+        double half = sum/2;
+        System.out.println(pq.poll());
+        return 0;
+    }
+
+    public boolean divideArray(int[] nums) {
+        int[] cnt = new int[501];
+        for (int n : nums)
+            ++cnt[n];
+
+        return IntStream.of(cnt).allMatch(n -> n %2 == 0);
+    }
+
+    TreeSet<Integer> treeSet = new TreeSet<>();
+    public int[][] getIntervals() {
+        List<int[]> res = new ArrayList<>();
+        List<Integer> list = treeSet.stream().toList();
+        int idx = 0;
+        while(idx < list.size()){
+            int start = list.get(idx++);
+            int end = start+1;
+            while (idx < list.size() && list.get(idx) == end){
+                idx++;
+                end++;
+            }
+            res.add(new int[]{start, end-1});
+        }
+
+        return res.toArray(new int[][]{});
+    }
+
+    class Node1{
+        int val;
+        char c;
+
+        public Node1(int val, char c) {
+            this.val = val;
+            this.c = c;
+        }
+
+        @Override
+        public String toString() {
+            return "Node1{" +
+                    "val=" + val +
+                    ", c=" + c +
+                    '}';
+        }
+    }
+    public String longestDiverseString(int a, int b, int c) {
+        PriorityQueue<Node1> pq = new PriorityQueue<>((a1, b1) -> b1.val - a1.val);
+        pq.add(new Node1(a, 'a'));
+        pq.add(new Node1(b, 'b'));
+        pq.add(new Node1(c, 'c'));
+        StringBuilder sb = new StringBuilder();
+
+        while (!pq.isEmpty()){
+            Node1 curr1 = pq.poll();
+            Node1 curr2 = pq.isEmpty() ? null : pq.poll();
+
+            if(curr1.val <= 0){
+                continue;
+            }
+
+            int len = sb.length();
+            if(sb.length() == 0){
+                extracted(sb, curr1, curr1, pq);
+            }
+            else if(sb.charAt(len-1) != curr1.c){
+                extracted(sb, curr1, curr1, pq);
+            }
+            else if(sb.charAt(len-1) == curr1.c && sb.charAt(len-2) != curr1.c){
+                sb.append(curr1.c);
+                pq.add(new Node1(curr1.val - 1, curr1.c));
+            }
+            else if(sb.charAt(len-1) == curr1.c && sb.charAt(len-2) == curr1.c){
+
+            }
+
+            if(curr2 != null && curr2.val > 0){
+                extracted(sb, curr2, curr1, pq);
+            }
+        }
+
+        return sb.toString();
+    }
+
+    private void extracted(StringBuilder sb, Node1 curr1, Node1 curr11, PriorityQueue<Node1> pq) {
+        sb.append(curr1.c);
+        if(curr1.val - 1 > 0){
+            sb.append(curr1.c);
+        }
+        pq.add(new Node1(curr1.val - 2, curr1.c));
+        setRight(sb, curr11.c);
+    }
+
+    private void setRight(StringBuilder sb, char c) {
+        int len = sb.length();
+        if(len > 2 && sb.charAt(len-1) == c && sb.charAt(len-2) == c && sb.charAt(len-3) == c){
+            sb.setLength(len-1);
+        }
+    }
+
+    public int removeOnes(int[][] grid) {
+        Map<Integer, Integer> rows = new HashMap<>();
+        Map<Integer, Integer> cols = new HashMap<>();
+        int m = grid.length;
+        int n = grid[0].length;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if(grid[i][j] == 1){
+                    rows.put(i, rows.getOrDefault(i, 0) + 1);
+                    cols.put(j, cols.getOrDefault(i, 0) + 1);
+                }
+            }
+        }
+
+        PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> rows.get(b[0]) + cols.get(b[1]) -
+                rows.get(a[0]) - cols.get(a[1]));
+
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if(grid[i][j] == 1){
+                    pq.add(new int[]{i, j});
+                }
+            }
+        }
+
+        int res = 0;
+        while (!pq.isEmpty()){
+            int[] curr = pq.poll();
+            if(!flip(grid, curr)){
+                return res;
+            }
+            res++;
+        }
+
+        return res;
+    }
+
+    private boolean flip(int[][] grid, int[] curr) {
+        int x = curr[0];
+        int y = curr[1];
+
+        boolean changed = false;
+        for(int j=0; j<grid[0].length; j++){
+            if(grid[x][j] == 1){
+                grid[x][j] = 0;
+                changed = true;
+            }
+        }
+
+        for(int i=0; i<grid.length; i++){
+            if(grid[i][y] == 1){
+                grid[i][y] = 0;
+                changed = true;
+            }
+        }
+
+        return changed;
+    }
+
+    private double[] ff(){
+        List<Double> output = new ArrayList<>();
+        return output.stream().mapToDouble(i->i).toArray();
+    }
+
+    static class Restaurant{
+        int id;
+        int rating;
+        int veganFriendly;
+        int price;
+        int distance;
+
+        public Restaurant(int[] r) {
+            this.id = r[0];
+            this.rating = r[1];
+            this.veganFriendly = r[2];
+            this.price = r[3];
+            this.distance = r[4];
+        }
+    }
+
+    public List<Integer> filterRestaurants(int[][] restaurants, int veganFriendly, int maxPrice, int maxDistance) {
+        Comparator<Restaurant> comparator = (a, b) -> a.rating == b.rating ? b.id - a.id : b.rating - a.rating;
+        return Arrays.stream(restaurants)
+                .map(Restaurant :: new)
+                .toList()
+                .stream()
+                .filter(r -> veganFilter(veganFriendly, r) && priceFilter(maxPrice, r) && distanceFilter(maxDistance, r))
+                .sorted(comparator)
+                .map(r -> r.id)
+                .toList();
+
+    }
+
+    private boolean veganFilter(int veganFriendly, Restaurant restaurant){
+        if(veganFriendly == 0){
+            return true;
+        }
+        return restaurant.veganFriendly == 1;
+    }
+
+    private boolean priceFilter(int maxPrice, Restaurant restaurant){
+        return restaurant.price <= maxPrice;
+    }
+
+    private boolean distanceFilter(int maxDistance,  Restaurant restaurant){
+        return restaurant.distance <= maxDistance;
+    }
+
+    public int minBitFlips(int start, int goal) {
+        String s1 = Integer.toBinaryString(start);
+        String s2 = Integer.toBinaryString(goal);
+
+        if(s1.length() == s2.length()){
+            return findMin(s1, s2);
+        }
+        else if(s1.length() > s2.length()){
+            int d = s1.length() - s2.length();
+            String s = "0".repeat(d);
+            s2 = s + s2;
+            return findMin(s1, s2);
+        }
+        else { //s2 > s1
+            int d = s2.length() - s1.length();
+            String s = "0".repeat(d);
+            s1 = s + s1;
+            return findMin(s1, s2);
+        }
+    }
+
+    private int findMin(String s1, String s2) {
+        int count = 0;
+        for(int i=0; i<s1.length(); i++){
+            if(s1.charAt(i) != s2.charAt(i)){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public int triangularSum(int[] nums) {
+        List<Integer> list = new ArrayList<>();
+        for(int num : nums){
+            list.add(num);
+        }
+
+        while (true){
+            if(list.size() == 1){
+                return list.get(0);
+            }
+
+            List<Integer> temp = new ArrayList<>();
+            for(int i=0; i<list.size()-1; i++){
+                int sum = (list.get(i) + list.get(i+1)) % 10;
+                temp.add(sum);
+            }
+
+            list = temp;
+        }
+    }
+
+    public long numberOfWays(String s) {
+        StringBuilder sb = new StringBuilder();
+        Long[] dp = new Long[s.length()+1];
+        long ans =  helper(s, sb, 0, dp);
+        return ans;
+    }
+
+    private long helper(String s, StringBuilder sb, int idx, Long[] dp){
+        if(dp[idx] != null){
+            return dp[idx];
+        }
+
+        if(sb.length() == 3){
+            String t = sb.toString();
+            if(t.equals("101") || t.equals("010")){
+                return 1;
+            }
+            else{
+                return 0;
+            }
+        }
+
+        long res = 0;
+        for(int i=idx; i<s.length(); i++){
+            int len = sb.length();
+            if(sb.length() == 0 || sb.charAt(len-1) != s.charAt(i)){
+                sb.append(s.charAt(i));
+                res += helper(s, sb, i+1, dp);
+                sb.setLength(len);
+            }
+        }
+
+        dp[idx] = res;
+        return dp[idx];
+    }
+
+    public List<List<Integer>> findWinners(int[][] matches) {
+        Set<Integer> winner = new HashSet<>();
+        Map<Integer, Integer> looser = new HashMap<>();
+
+        for(int[] m : matches){
+            winner.add(m[0]);
+            looser.put(m[1], looser.getOrDefault(m[1], 0) + 1);
+        }
+
+        List<List<Integer>> res = new ArrayList<>();
+        List<Integer> temp = new ArrayList<>();
+        for(int p : winner){
+            if(!looser.containsKey(p)){
+                temp.add(p);
+            }
+        }
+        Collections.sort(temp);
+        res.add(temp);
+
+        List<Integer> temp2 = new ArrayList<>();
+        for(Map.Entry<Integer, Integer> entry : looser.entrySet()){
+            if(entry.getValue() == 1){
+                temp2.add(entry.getKey());
+            }
+        }
+
+        Collections.sort(temp2);
+        res.add(temp2);
+        return res;
+    }
+
+    public int smallestCommonElement(int[][] mat) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int[] m : mat){
+            for (int e : m){
+                map.put(e, map.getOrDefault(e, 0) + 1);
+            }
+        }
+
+        for(int j=0; j<mat[0].length; j++){
+            if(map.get(mat[0][j]) == mat.length){
+                return mat[0][j];
+            }
+        }
+
+        return -1;
+    }
+
+    class Node2{
+        Integer one;
+        Integer two;
+        Integer three;
+        public Node2(Integer one, Integer two, Integer three){
+            this.one = one;
+            this.two = two;
+            this.three = three;
+        }
+    }
+
+    public List<Integer> shortestDistanceColor(int[] colors, int[][] queries) {
+        int n = colors.length;
+        Node2[] left = new Node2[n];
+        for(int i=0; i<n; i++){
+            int c = colors[i];
+            Node2 temp = getNode(c);
+            if (i != 0) {
+                Node2 prev = left[i - 1];
+                setNode(temp, prev);
+
+                if (c == 1) {
+                    temp.one = 0;
+                } else if (c == 2) {
+                    temp.two = 0;
+                } else {
+                    temp.three = 0;
+                }
+            }
+            left[i] = temp;
+        }
+
+        Node2[] right = new Node2[n];
+        for(int i=n-1; i>=0; i--){
+            int c = colors[i];
+            Node2 temp = getNode(c);
+
+            if (i != n - 1) {
+                Node2 next = right[i + 1];
+                setNode(temp, next);
+
+                if (c == 1) {
+                    temp.one = 0;
+                } else if (c == 2) {
+                    temp.two = 0;
+                } else {
+                    temp.three = 0;
+                }
+            }
+            right[i] = temp;
+        }
+
+        List<Integer> res = new ArrayList<>();
+        for (int[] q : queries){
+            int idx = q[0];
+            int val = q[1];
+            Node2 l = left[idx];
+            Node2 r = right[idx];
+
+            if(val == 1){
+                add(l.one, r.one, res);
+            }
+            else if(val == 2){
+                add(l.two, r.two, res);
+            }
+            else{
+                add(l.three, r.three, res);
+            }
+        }
+
+        return res;
+    }
+
+    private Node2 getNode(int c){
+        Node2 temp;
+        if(c == 1){
+            temp = new Node2(0, null, null);
+        }
+        else if(c == 2){
+            temp = new Node2(null, 0, null);
+        }
+        else {
+            temp = new Node2(null, null, 0);
+        }
+        return temp;
+    }
+
+    private void setNode(Node2 temp, Node2 prev){
+        temp.one = prev.one == null ? null : prev.one + 1;
+        temp.two = prev.two == null ? null : prev.two + 1;
+        temp.three = prev.three == null ? null : prev.three + 1;
+    }
+
+    private void add(Integer a, Integer b, List<Integer> res){
+        if(a == null && b == null){
+            res.add(-1);
+        }
+        else if(a == null && b != null){
+            res.add(b);
+        }
+        else if(a != null && b == null){
+            res.add(a);
+        }
+        else{
+            res.add(Math.min(a, b));
+        }
+    }
+
+    public int largestInteger(int num) {
+        List<Integer> digits = getDigits(num);
+        PriorityQueue<Integer> evens = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+        PriorityQueue<Integer> odds = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+        for(int d : digits){
+            if((d & 1) == 0){
+                evens.add(d);
+            }
+            else odds.add(d);
+        }
+
+        int p = digits.size()-1;
+        int res = 0;
+        for(int d : digits){
+            int t;
+            if((d & 1) == 0){
+                t = evens.poll() * (int)Math.pow(10, p);
+            }
+            else {
+                t = odds.poll() * (int)Math.pow(10, p);
+            }
+            p--;
+            res += t;
+        }
+
+        return res;
+    }
+
+    private List<Integer> getDigits(int num) {
+        List<Integer> digits = new ArrayList<>();
+        while (num!=0){
+            digits.add(num%10);
+            num/=10;
+        }
+        Collections.reverse(digits);
+        return digits;
+    }
+
+    class Node3{
+        int val;
+        int count;
+
+        public Node3(int val, int count) {
+            this.val = val;
+            this.count = count;
+        }
+    }
+    public int maximumProduct(int[] nums, int k) {
+        PriorityQueue<Integer> pq = new PriorityQueue<>((a, b) -> Integer.compare(a, b));
+        for(int n : nums){
+            pq.add(n);
+        }
+
+        while (k > 0){
+            int poll = pq.poll();
+            poll++;
+            pq.add(poll);
+            k--;
+        }
+
+        int MOD = (int) 1e9 + 7;
+        int res = 1;
+        while (!pq.isEmpty()){
+            res += (pq.poll() * res) % MOD;
+        }
+        return res;
+    }
 
     public static void main(String[] args) {
         Solution solution = new Solution();
-        System.out.println();
+        //System.out.println(solution.numberOfWays("001101"));
+
+        for(int i = 0; i<20; i++){
+            System.out.println(i + " : " + Integer.toBinaryString(i));
+        }
+
+        System.out.println(4<<3);
     }
 }
