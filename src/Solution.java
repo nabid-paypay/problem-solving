@@ -1,5 +1,6 @@
 import java.util.*;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -844,14 +845,260 @@ class Solution {
         return res;
     }
 
-    public static void main(String[] args) {
-        Solution solution = new Solution();
-        //System.out.println(solution.numberOfWays("001101"));
 
-        for(int i = 0; i<20; i++){
-            System.out.println(i + " : " + Integer.toBinaryString(i));
+    private void foo(){
+        int[][] mat = {{1,2,3,4,5,6,},{1,12,13,14,15,16},{1,22,23,24,25,26}};
+        int rows = mat.length;
+        int cols = mat[0].length;
+        int lowest=Integer.MAX_VALUE;
+        int highest=Integer.MIN_VALUE;
+        List<int[]> highestPos = new ArrayList<>();
+        List<int[]> lowestPos = new ArrayList<>();
+
+        System.out.println("informed values: ");
+        for(int i=0; i<rows; i++){
+            for(int j=0; j<cols; j++){
+                highest = Math.max(mat[i][j], highest);
+                lowest = Math.min(mat[i][j], lowest);
+                System.out.print(mat[i][j]+"\t");
+            }
+            System.out.println("");
         }
 
-        System.out.println(4<<3);
+        for(int i=0; i<rows; i++){
+            for(int j=0; j<cols; j++){
+                if(mat[i][j] == highest){
+                    highestPos.add(new int[]{i, j});
+                }
+                else if(mat[i][j] == lowest){
+                    lowestPos.add(new int[]{i, j});
+                }
+            }
+        }
+
+        System.out.println("highest is : " + mat[highestPos.get(0)[0]][highestPos.get(0)[1]]);
+        for(int[] h : highestPos){
+            System.out.println("located in : " + "row : " + (h[0] + 1) + " col : " + (h[1] + 1));
+        }
+
+        System.out.println("\n");
+        System.out.println("lowest is : " + mat[lowestPos.get(0)[0]][lowestPos.get(0)[1]]);
+        for(int[] l : lowestPos){
+            System.out.println("located in : " + "row : " + (l[0] + 1) + " col : " + (l[1] + 1));
+        }
+    }
+
+    private int[] getRandomArray(int size){
+        int[] arr = new int[size];
+        for(int i=0; i<arr.length; i++){
+            //if you don't any bound
+            int rand = ThreadLocalRandom.current().nextInt();
+            //if you need any bound. for example following will return int value in between 10 and 100
+            //int rand = ThreadLocalRandom.current().nextInt(10, 100);
+            arr[i] = rand;
+        }
+        return arr;
+    }
+
+    public String findContestMatch(int n) {
+        int a = (int) (Math.log(n) / Math.log(2));
+
+        return "";
+    }
+
+    public List<Integer> fibo(int k) {
+        List<Integer> fib = new ArrayList<>();
+        fib.add(1);
+        fib.add(1);
+        fib.add(1);
+        for(int i=3;  ;i++){
+            int l = fib.get(i-1) + fib.get(i-2);
+            if(l<=k){
+                fib.add(l);
+            }
+            else break;
+        }
+
+        return fib;
+    }
+
+    public int findMinFibonacciNumbers(int k) {
+        List<Integer> fib = fibo(k);
+        return helper(fib, 0, k, 0);
+    }
+
+    private int helper(List<Integer> fib, int idx, int k, int sum) {
+        if(idx >= fib.size() || sum > k){
+            return Integer.MAX_VALUE;
+        }
+        if(sum == k){
+            return 1;
+        }
+
+        int a = Integer.MAX_VALUE;
+        int b = Integer.MAX_VALUE;
+        a = helper(fib, idx, k, sum + fib.get(idx));
+        if(idx + 1 < fib.size()){
+            b = helper(fib, idx+1, k, sum + fib.get(idx + 1));
+        }
+
+        return Math.min(a, b);
+    }
+
+    class Node4{
+        int cumSum;
+        int idx;
+        public Node4(int cumSum, int idx) {
+            this.cumSum = cumSum;
+            this.idx = idx;
+        }
+
+        @Override
+        public String toString() {
+            return "Node4{" +
+                    "cumSum=" + cumSum +
+                    ", idx=" + idx +
+                    '}';
+        }
+    }
+
+    public int shortestSubarray(int[] nums, int k) {
+        int n = nums.length;
+        int min = Integer.MAX_VALUE;
+        int currSum = 0;
+
+        Deque<Node4> deque = new ArrayDeque<>();
+        for (int i = 0; i < n; i++) {
+            currSum += nums[i];
+            while (!deque.isEmpty() && deque.peekLast().cumSum < currSum){
+                deque.removeLast();
+            }
+
+            while (!deque.isEmpty() && deque.peekLast().cumSum - deque.peekFirst().cumSum >= k){
+                min = Math.min(min, deque.peekFirst().idx - deque.peekLast().idx + 1);
+                deque.removeFirst();
+            }
+
+            deque.addLast(new Node4(currSum, i));
+        }
+
+        return min == Integer.MAX_VALUE ? -1 : min;
+    }
+
+    public int minimumRounds(int[] tasks) {
+        Map<Integer, Integer> map = new HashMap<>();
+        for(int t : tasks){
+            map.put(t, map.getOrDefault(t, 0) + 1);
+        }
+
+        int res = 0;
+        for(int val : map.values()){
+            if(val == 1){
+                return -1;
+            }
+            else if(val == 2 || val == 3){
+                res++;
+            }
+            else{
+                int d = val / 3;
+                res += d;
+
+                int t = d * 3;
+                if(t < val){
+                    res++;
+                }
+            }
+        }
+
+        return res;
+    }
+
+    public String digitSum(String s, int k) {
+        if(s.length() == k){
+            return s;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        StringBuilder t = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            t.append(s.charAt(i));
+            if(t.length() == k){
+                sb.append(getSum(t.toString()));
+                t = new StringBuilder();
+            }
+        }
+
+        return sb.length() <= k ? sb.toString() : digitSum(sb.toString(), k);
+    }
+
+    private String getSum(String s) {
+        int sum = 0;
+        for (char ch : s.toCharArray()){
+            sum += Character.digit(ch, 10);
+        }
+
+        return String.valueOf(sum);
+    }
+
+    class Node5{
+        char ch;
+        int parent;
+        List<Node> children = new ArrayList<>();
+
+        public Node5(char ch, int parent) {
+            this.ch = ch;
+            this.parent = parent;
+        }
+    }
+    public int longestPath(int[] parent, String s) {
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for(int i=0; i<parent.length; i++){
+            int p = parent[i];
+            if(p == -1){
+                continue;
+            }
+            map.putIfAbsent(p, new ArrayList<>());
+            map.get(p).add(i);
+        }
+
+        return helper(0, map, s, -1);
+    }
+
+    private int helper(int curr, Map<Integer, List<Integer>> map, String s, int gp){
+        int max = 0;
+        for(int c : map.getOrDefault(curr, new ArrayList<>())){
+            if(gp == -1 && s.charAt(curr) != s.charAt(c)
+                    || s.charAt(curr) != s.charAt(c) && s.charAt(c) != s.charAt(gp)){
+                max = Math.max(max, 1 + helper(c, map, s, curr));
+            }
+            else{
+                max = Math.max(max, helper(c, map, s, curr));
+            }
+        }
+
+        return max;
+    }
+
+    private void foo2(List<Integer> list){
+        int max1 = -1;
+        int max2 = -1;
+        for(int i : list){
+            if (i > max1) {
+                max2 = max1;
+                max1 = i;
+            }
+            else if (i > max2) {
+                max2 = i;
+            }
+        }
+
+        System.out.println("max1 :" + max1);
+        System.out.println("max2 :" + max2);
+    }
+
+
+    public static void main(String[] args) {
+        Solution solution = new Solution();
+        solution.foo2(List.of( 1, 2, 3));
     }
 }
