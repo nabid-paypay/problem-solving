@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.Condition;
@@ -1096,9 +1097,101 @@ class Solution {
         System.out.println("max2 :" + max2);
     }
 
+    public int[] restoreArray(int[][] ap) {
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for(int[] p : ap){
+            map.putIfAbsent(p[0], new ArrayList<>());
+            map.putIfAbsent(p[1], new ArrayList<>());
+
+            map.get(p[0]).add(p[1]);
+            map.get(p[1]).add(p[0]);
+        }
+
+        int head = -1;
+        for(Map.Entry<Integer, List<Integer>> entry : map.entrySet()){
+            if(entry.getValue().size() == 1){
+                head = entry.getKey();
+                break;
+            }
+        }
+
+        List<Integer> path = new ArrayList<>();
+        Set<Integer> vs = new HashSet<>();
+        dfs(head, path, vs, map);
+
+        return path.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    private void dfs(int curr, List<Integer> path, Set<Integer> vs, Map<Integer, List<Integer>> map) {
+        path.add(curr);
+        vs.add(curr);
+
+        for(int nei : map.getOrDefault(curr, new ArrayList<>())){
+            if(!vs.contains(nei)){
+                dfs(nei, path, vs, map);
+            }
+        }
+    }
+
+    private boolean isPalindrome(double num){
+        String numInString = Double.toString(num);
+        String format = String.format(numInString, "%.0f");
+        String reverseNum = new StringBuilder(numInString).reverse().toString();
+        return reverseNum.equals(numInString);
+    }
+
+    static class Node6{
+        int capacity;
+        int currRocks;
+
+        public Node6(int capacity, int currRocks) {
+            this.capacity = capacity;
+            this.currRocks = currRocks;
+        }
+
+        @Override
+        public String toString() {
+            return "Node6{" +
+                    "capacity=" + capacity +
+                    ", currRocks=" + currRocks +
+                    '}';
+        }
+    }
+    public int maximumBags(int[] capacity, int[] rocks, int additionalRocks) {
+        PriorityQueue<Node6> pq = new PriorityQueue<>(Comparator.comparingInt(a -> (a.capacity - a.currRocks)));
+        for(int i =0; i<rocks.length; i++){
+            pq.add(new Node6(capacity[i], rocks[i]));
+        }
+
+        int res = 0;
+        while (!pq.isEmpty() && additionalRocks >= 0){
+            Node6 curr = pq.poll();
+            if(curr.capacity - curr.currRocks <= 0){
+                res++;
+                continue;
+            }
+
+            int diff = curr.capacity - curr.currRocks;
+            if(diff >= additionalRocks){
+                additionalRocks -= diff;
+                res++;
+            }
+        }
+
+        return res;
+    }
+
+
 
     public static void main(String[] args) {
         Solution solution = new Solution();
         solution.foo2(List.of( 1, 2, 3));
+       // System.out.println(solution.isPalindrome(12321));
+
+        ArrayBlockingQueue<Integer> arrayBlockingQueue = new ArrayBlockingQueue<>(4);
+        Queue<Integer> taskQueue = new ArrayBlockingQueue<>(2);
+        int a = ((ArrayBlockingQueue<?>) taskQueue).remainingCapacity();
+        System.out.println(a);
+        //System.out.println(arrayBlockingQueue.remainingCapacity());
     }
 }

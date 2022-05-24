@@ -1,6 +1,9 @@
 package oop.rebirth.strategy;
 
 public class Context {
+//    It’s a behavioral design pattern. Strategy pattern is used when
+//    we have multiple algorithms for a specific task and
+//    the client decides the actual implementation to be used at runtime.
     private final Strategy strategy;
 
     public Context(Strategy strategy) {
