@@ -1,3 +1,4 @@
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -1181,17 +1182,259 @@ class Solution {
         return res;
     }
 
+    private void guess(String[] guessed, String[] original){
+        Set<String> set = new HashSet<>();
+        for(String o : original){
+            set.add(o);
+        }
+        for (int i = 0; i < guessed.length; i++) {
+            if(guessed[i].equals(original[i])){
+                System.out.println("GREEN");
+            }
+            else if(set.contains(guessed[i])){
+                System.out.println("YELLOW");
+            }
+            else{
+                System.out.println("GREY");
+            }
+        }
+    }
+
+
+
+    private boolean isArithmeticSeq(int[] nums, int start, int end) {
+        if(end - start < 2) return true;
+
+        int[] arr = Arrays.copyOfRange(nums, start, end +1);
+
+        IntSummaryStatistics intSummaryStatistics = Arrays.stream(arr).summaryStatistics();
+        int max = intSummaryStatistics.getMax();
+        int min = intSummaryStatistics.getMin();
+
+        Set<Integer> set = new HashSet<>();
+        IntStream.of(arr).forEach(set::add);
+
+        if((max - min) % (end - start) != 0) return false;
+        int interval = (max - min) / (end -start);
+
+        for(int i = 1; i <= end -start; i++) {
+            if(!set.contains(min + i * interval)) return false;
+        }
+
+        return true;
+    }
+
+
+    public boolean digitCount(String num) {
+        Map<Character, Integer> map = new HashMap<>();
+        for(char ch : num.toCharArray()){
+            map.put(ch, map.getOrDefault(ch, 0) + 1);
+        }
+
+        for(int i=0; i<num.length(); i++){
+            int count = Character.digit(num.charAt(i), 10);
+            char digit = (char)('0' + i);
+
+            if(count == 0){
+                if(map.containsKey(digit)){
+                    return false;
+                }
+            }
+            else if(!map.containsKey(digit)){
+                return false;
+            }
+            else if(map.get(digit) != count){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public String largestWordCount(String[] messages, String[] senders) {
+        Map<String, Integer> map = new HashMap<>();
+
+        int max = 0;
+        for (int i = 0; i < senders.length; i++) {
+            String s = senders[i];
+            String msg = messages[i];
+            String[] arr = msg.split(" ");
+
+            map.put(s, map.getOrDefault(s, 0) + arr.length);
+
+            max = Math.max(max, map.get(s));
+        }
+
+        String res = "";
+        for (Map.Entry<String, Integer> entry : map.entrySet()){
+            if(entry.getValue() == max){
+                if(res.compareTo(entry.getKey()) < 0){
+                    res = entry.getKey();
+                }
+            }
+        }
+
+        return res;
+    }
+
+    class Node7{
+        int node;
+        int degree;
+        public Node7(int node, int degree) {
+            this.node = node;
+            this.degree = degree;
+        }
+    }
+    public long maximumImportance(int n, int[][] roads) {
+        int[] degree = new int[n];
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        Map<Integer, Integer> imp = new HashMap<>();
+        for(int[] r : roads){
+            map.putIfAbsent(r[0], new ArrayList<>());
+            map.putIfAbsent(r[1], new ArrayList<>());
+
+            map.get(r[0]).add(r[1]);
+            map.get(r[1]).add(r[0]);
+
+            degree[r[0]]++;
+            degree[r[1]]++;
+        }
+
+        List<Node7> list = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            list.add(new Node7(i, degree[i]));
+        }
+
+        list.sort(Comparator.comparingInt(a -> -1 * a.degree));
+
+        int t = n;
+        for (Node7 node : list){
+            imp.put(node.node, t--);
+        }
+
+        boolean[] vs = new boolean[n];
+        long res = 0;
+        for (int i = 0; i < n; i++) {
+            res += dfs(i, vs, map, imp);
+        }
+
+        return res/2;
+    }
+
+    private long dfs(int curr, boolean[] vs, Map<Integer, List<Integer>> map, Map<Integer, Integer> imp) {
+        if(vs[curr]){
+            return 0;
+        }
+        vs[curr] = true;
+
+        long res = 0;
+        for(int nei : map.getOrDefault(curr, new ArrayList<>())){
+            res += (imp.get(curr) + imp.get(nei));
+            res += dfs(nei, vs, map, imp);
+        }
+
+        return res;
+    }
+
+    public int countAsterisks(String s) {
+        int c = 0;
+        for(char ch : s.toCharArray()){
+            if(ch == '*'){
+                c++;
+            }
+        }
+
+        int bar = 0;
+        for(char ch : s.toCharArray()){
+            if(ch == '|'){
+                bar++;
+            }
+            if(bar == 2){
+                bar = 0;
+            }
+            if(bar == 1 && ch == '*'){
+                c--;
+            }
+        }
+
+        return c;
+    }
+
+    public long countPairs(int n, int[][] edges) {
+        Map<Integer, List<Integer>> map = new HashMap<>();
+        for(int[] e : edges){
+            map.putIfAbsent(e[0], new ArrayList<>());
+            map.putIfAbsent(e[1], new ArrayList<>());
+
+            map.get(e[0]).add(e[1]);
+            map.get(e[1]).add(e[0]);
+        }
+
+        boolean[] vs = new boolean[n];
+        int[] c = new int[n];
+        for(int i=0; i<n; i++){
+            dfs(i, map, vs);
+            System.out.println(count);
+            c[i] = count;
+            this.count = 0;
+        }
+
+        vs = new boolean[n];
+        for(int i=0; i<n; i++){
+            if(c[i] == 0){
+                dfs(i, map, vs, c);
+            }
+        }
+
+        for (int i : c){
+            System.out.println(i);
+        }
+
+        long res = 0;
+        for(int i : c){
+            if(i == n){
+                return 0;
+            }
+            res += (n - i);
+        }
+
+        return res/2;
+    }
+
+    private void dfs(int curr, Map<Integer, List<Integer>> map, boolean[] vs, int[] c){
+        if (vs[curr]){
+            return;
+        }
+        vs[curr] = true;
+
+        for(int nei : map.getOrDefault(curr, new ArrayList<>())){
+            if(c[nei] != 0){
+                c[curr] = c[nei];
+                return;
+            }
+            dfs(nei, map, vs);
+        }
+    }
+
+    int count = 0;
+    private void dfs(int curr, Map<Integer, List<Integer>> map, boolean[] vs){
+        if (vs[curr]){
+            return;
+        }
+        vs[curr] = true;
+
+        count++;
+        for(int nei : map.getOrDefault(curr, new ArrayList<>())){
+            dfs(nei, map, vs);
+        }
+    }
+
+
 
 
     public static void main(String[] args) {
         Solution solution = new Solution();
-        solution.foo2(List.of( 1, 2, 3));
-       // System.out.println(solution.isPalindrome(12321));
-
-        ArrayBlockingQueue<Integer> arrayBlockingQueue = new ArrayBlockingQueue<>(4);
-        Queue<Integer> taskQueue = new ArrayBlockingQueue<>(2);
-        int a = ((ArrayBlockingQueue<?>) taskQueue).remainingCapacity();
-        System.out.println(a);
-        //System.out.println(arrayBlockingQueue.remainingCapacity());
+        //solution.countPairs(7, new int[][]{{0,2},{0,5},{2,4},{1,6},{5,4}});
+        System.out.println(5^2);
     }
 }

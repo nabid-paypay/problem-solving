@@ -50,5 +50,6 @@ public class StreamTest {
                 .map(Person::getName)
                 .findFirst().
                  orElse(""));
+
     }
 }
