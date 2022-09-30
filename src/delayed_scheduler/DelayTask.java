@@ -17,11 +17,12 @@ public class DelayTask extends FutureTask implements Delayed {
 
     @Override
     public long getDelay(TimeUnit unit) {
-        return 0;
+        long diff = this.startTime - System.currentTimeMillis();
+        return unit.convert(diff, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public int compareTo(Delayed o) {
-        return 0;
+        return Long.compare(this.getDelay(TimeUnit.MILLISECONDS), ((DelayTask) o).getDelay(TimeUnit.MILLISECONDS));
     }
 }
