@@ -20,4 +20,7 @@ public class BrickWall {
         return wall.size() - max;
 
     }
+
+    public void sampleTest(){System.out.println("OK");
+    }
 }
